@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+        #app {
+            background: red;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+        }
+
+        #toolbar {
+            background: green;
+            width: 25%;
+            padding: 2em;
+            box-sizing: border-box;
+        }
+
+        #toolbar textarea {
+            width: 100%;
+            height: 200px;
+        }
+
+        #playground {
+            box-sizing: border-box;
+            padding: 2em;
+        }
+    </style>
+</head>
+
+<body>
+    <section id="app">
+        <div id="toolbar">
+            <textarea id="data">
+2
+3 5 7
+1 4
+5
+6
+4
+8
+            </textarea>
+            <button id="send">CREATE</button>
+        </div>
+        <section id="playground">
+            <svg width="500" height="500"></svg>
+        </section>
+    </section>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="http://d3js.org/d3-selection-multi.v1.js"></script>
+    <script>
+
+        var DFSprint = function(i, visited, graph) {
+            if(!visited[i]) {
+                visited[i] = true;
+                console.log(i);
+            }
+
+            graph[i].forEach(el => {
+                if (!visited[el]) {
+                    DFSprint(el, visited, graph)
+                }
+             });
+        };
+
+
+        var DFSstack = function(i, visited, stack, graph) {
+                visited[i] = true;
+                graph[i].forEach(el => {
+                    if (!visited[el]) {
+                        DFSstack(el, visited, stack, graph)
+                    }
+                });
+                stack.push(i);
+        };
+
+
+        var printSCCs = function(graph) {
+            var stack = [];
+            var visited = graph.map(x => false);
+
+            for (var i = 0; i < graph.length; i++) {
+                if (visited[i] == false) {
+                    DFSstack(i, visited, stack, graph);
+                }
+            }
+            console.log("stack", stack);
+
+            var graph2 = [[],[],[],[],[],[],[], []];
+            for (var i = 0; i < graph.length; i++) {
+                graph[i].forEach(j => {
+                    graph2[j].push(i);
+                })
+            }
+
+            var visited = graph2.map(x => false);
+            var cn = 0;
+
+            var ile = stack.length;
+            var result =  [];
+
+            for(var i = 0; i< ile; i++) {
+              var s = stack.pop();
+
+              if(!visited[s]) {
+                  cn++;
+                  DFSprint(i ,visited, graph2);
+                  console.log("*");
+              }
+            }
+
+
+        };
+
+
+
+
+
+        var svg = d3.select("svg"),
+            width = +svg.attr("width"),
+            height = +svg.attr("height");
+
+
+        var simulation = d3.forceSimulation()
+            .velocityDecay(0.2)
+            .force("link", d3.forceLink().id(function (d) {return d.id;}).distance(100).strength(0.1))
+            .force("charge", d3.forceManyBody())
+            .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("collide", d3.forceCollide().radius(function(d) { return d.r + 0.5; }).iterations(2))
+
+
+        svg.append('defs').append('marker')
+            .attrs({'id':'arrowhead',
+                'viewBox':'-0 -5 10 10',
+                'refX':13,
+                'refY':0,
+                'orient':'auto',
+                'markerWidth':13,
+                'markerHeight':13,
+                'xoverflow':'visible'})
+            .append('svg:path')
+            .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+            .attr('fill', '#999')
+            .style('stroke','none');
+
+
+
+        function ticked() {
+
+
+//            path.attr("d", function(d) {
+//                var dx = d.target.x - d.source.x,
+//                    dy = d.target.y - d.source.y,
+//                    dr = Math.sqrt(dx * dx + dy * dy);
+//                return "M" +
+//                    d.source.x + "," +
+//                    d.source.y + "A" +
+//                    dr + "," + dr + " 0 0,1 " +
+//                    d.target.x + "," +
+//                    d.target.y;
+//            });
+
+            link
+                .attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+            node.attr("transform", function(d) {
+                return 'translate(' +d.x + ',' + d.y +')';
+            })
+        }
+
+
+        function dragstarted(d) {
+            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(d) {
+            d.fx = d3.event.x;
+            d.fy = d3.event.y;
+        }
+
+        function dragended(d) {
+            if (!d3.event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+
+
+
+
+
+
+        var textarea = document.querySelector('#data');
+
+        var createFun =  function() {
+            var value = textarea.value;
+
+
+            var t  = {
+                nodes: [],
+                links: []
+            };
+
+            var graphToAlg = [];
+
+            value.split(/\n/).forEach((r, i) => {
+                t.nodes.push({id: (i+1).toString()});
+                graphToAlg[i] = [];
+                r.split(" ").forEach((n) => {
+                    if(n) {
+                        graphToAlg[i].push(parseInt(n) - 1);
+                        t.links.push({
+                            source: (i+1).toString(),
+                            target: n
+                        })
+                    }
+                });
+            });
+
+
+           graph = JSON.parse(JSON.stringify(t));
+           console.log(graphToAlg);
+
+
+            printSCCs(graphToAlg);
+            console.log('*** end ***');
+
+
+
+            svg.selectAll("g")
+                .remove()
+                .exit();
+
+
+            link = svg.append("g")
+                .attr("class", "links")
+                .selectAll("line")
+                .data(graph.links)
+                .enter().append("line")
+                .attr("stroke", 'green')
+                .attr("stroke-width", 2)
+                .attr('marker-end','url(#arrowhead)');
+
+         node = svg.append("g")
+                .attr("class", "nodes")
+                .selectAll("g")
+                .data(graph.nodes)
+                .enter().append("g")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended))
+                .attr("fill", 'pink')
+
+
+            node.append("circle").attr('fill', 'pink').attr('r', 20);
+            node.append("text").attr('dy', 0).attr('dx', 0).attr('fill', 'blue').text(function(r) {
+                return parseInt(r.id) - 1;
+            });
+
+            simulation
+                .nodes(graph.nodes)
+                .on("tick", ticked);
+
+            simulation.force("link")
+                .links(graph.links);
+        };
+
+        var btn = document.querySelector('#send');
+        btn.addEventListener('click', createFun);
+    </script>
+</body>
+</html>
