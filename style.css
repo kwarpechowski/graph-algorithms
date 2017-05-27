@@ -1,0 +1,26 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-family: Arial,Helvetica Neue,Helvetica,sans-serif;
+}
+
+#app svg {
+    border: 1px solid pink;
+    width: 500px;
+    height: 500px;
+}
+
+#rules {
+    font-size: 12px;
+}
+
+#rules p {
+    margin: 0;
+    padding: 0;
+}

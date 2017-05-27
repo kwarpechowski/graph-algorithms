@@ -1,30 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #app svg {
-            border: 1px solid pink;
-            width: 500px;
-            height: 500px;
-
-        }
-    </style>
+    <link rel="stylesheet" href="style.css" type="text/css" media="all"/>
 </head>
 
 <body>
+    <div id="rules">
+        Instrukcja:
+        <p>Podwójne kliknięcie - dodanie nowego elementu</p>
+        <p>Kliknięcie elementu A, a następnie B  - dodanie powiązania z A do B</p>
+        <p>lub z konsoli add(); addRel(A,B)</p>
+        <p>Ten sam kolor = silnie spójna składowa</p>
+        <p>elementy z ramka = silnie spójnie składowe z największą ilością sąsiadów</p>
+        <button id="loadData">Zaladuj dane z polecenia</button>
+    </div>
     <section id="app">
-            <svg></svg>
+        <svg></svg>
     </section>
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="http://d3js.org/d3-selection-multi.v1.js"></script>
